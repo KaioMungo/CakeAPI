@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Bolos - Cake API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>🎂 Gestão de Bolos da Confeitaria</h1>
+        <p>Conectado em: http://localhost:5001</p>
+    </header>
+
+    <main>
+        <div id="status-message" class="hidden"></div>
+        
+        <section id="form-section">
+            <h2>Cadastrar Novo Bolo</h2>
+            <form id="cake-form">
+                <input type="hidden" id="cake-id" value="">
+                
+                <label for="name">Nome:</label>
+                <input type="text" id="name" required>
+
+                <label for="flavor">Sabor:</label>
+                <input type="text" id="flavor" required>
+
+                <label for="price">Preço:</label>
+                <input type="number" id="price" step="0.01" required>
+
+                <label for="description">Descrição:</label>
+                <textarea id="description"></textarea>
+
+                <button type="submit" id="submit-btn">Cadastrar Bolo</button>
+            </form>
+        </section>
+
+        <section id="list-section">
+            <h2>Catálogo de Bolos</h2>
+            <div id="cakes-list" class="cake-grid">
+                </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
