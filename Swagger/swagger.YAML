@@ -1,0 +1,324 @@
+openapi: 3.0.0
+info:
+  title: Cake Ordering API (Confeitaria)
+  version: 1.0.0
+  description: API RESTful para gerenciar o catálogo de bolos, clientes e o fluxo de pedidos de uma confeitaria.
+
+servers:
+  - url: http://localhost:5000
+    description: Servidor de Desenvolvimento Local
+
+tags:
+  - name: Bolos
+    description: Operações de CRUD para o catálogo de bolos.
+  - name: Clientes
+    description: Operações de CRUD para o cadastro de clientes.
+  - name: Pedidos
+    description: Operações de CRUD para os pedidos (cabeçalho).
+  - name: Itens do Pedido
+    description: Detalhes dos produtos dentro de um pedido específico.
+
+paths:
+  /cakes:
+    get:
+      tags: [Bolos]
+      summary: Lista todos os bolos cadastrados
+      responses:
+        '200':
+          description: Lista de bolos retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cake'
+    post:
+      tags: [Bolos]
+      summary: Cadastra um novo bolo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CakeInput'
+      responses:
+        '201':
+          description: Bolo criado com sucesso.
+        '400':
+          description: Dados inválidos (campos vazios ou bolo já cadastrado).
+
+  /cakes/{cake_id}:
+    parameters:
+      - name: cake_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [Bolos]
+      summary: Obtém um bolo pelo ID
+      responses:
+        '200':
+          description: Bolo encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cake'
+        '404':
+          description: Bolo não encontrado.
+    put:
+      tags: [Bolos]
+      summary: Atualiza um bolo existente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CakeInput'
+      responses:
+        '200':
+          description: Bolo atualizado com sucesso.
+        '404':
+          description: Bolo não encontrado.
+    delete:
+      tags: [Bolos]
+      summary: Deleta um bolo pelo ID
+      responses:
+        '204':
+          description: Bolo deletado com sucesso.
+        '404':
+          description: Bolo não encontrado.
+
+  /customers:
+    get:
+      tags: [Clientes]
+      summary: Lista todos os clientes
+      responses:
+        '200':
+          description: Lista de clientes retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+    post:
+      tags: [Clientes]
+      summary: Cadastra um novo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        '201':
+          description: Cliente criado com sucesso.
+
+  /orders:
+    get:
+      tags: [Pedidos]
+      summary: Lista todos os pedidos
+      responses:
+        '200':
+          description: Lista de pedidos retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+    post:
+      tags: [Pedidos]
+      summary: Cria um novo pedido (cabeçalho)
+      description: Requer um 'customer_id' existente. O 'total_price' deve ser fornecido ou calculado pelo backend.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+      responses:
+        '201':
+          description: Pedido criado com sucesso.
+        '404':
+          description: Cliente não encontrado.
+  
+  /orders/{order_id}/items:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [Itens do Pedido]
+      summary: Lista todos os itens de um pedido
+      responses:
+        '200':
+          description: Lista de itens do pedido.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderItem'
+    post:
+      tags: [Itens do Pedido]
+      summary: Adiciona um item (bolo) a um pedido
+      description: Requer 'cake_id' e 'quantity'. O 'unit_price' é geralmente buscado do catálogo de Bolos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderItemInput'
+      responses:
+        '201':
+          description: Item adicionado ao pedido com sucesso.
+        '404':
+          description: Pedido ou Bolo não encontrado.
+
+components:
+  schemas:
+    # --- Esquemnas de Entidades ---
+    Cake:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do bolo (PK).
+        name:
+          type: string
+        flavor:
+          type: string
+        price:
+          type: number
+          format: float
+        description:
+          type: string
+          nullable: true
+        available:
+          type: string
+          default: Disponivel
+        date_created:
+          type: string
+          format: date-time
+      required:
+        - name
+        - flavor
+        - price
+        
+    CakeInput:
+      type: object
+      description: Dados necessários para criar ou atualizar um bolo.
+      allOf:
+        - $ref: '#/components/schemas/Cake'
+      properties:
+        id:
+          readOnly: true
+          
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        date_created:
+          type: string
+          format: date-time
+      required:
+        - name
+
+    CustomerInput:
+      type: object
+      description: Dados para criar ou atualizar um cliente.
+      allOf:
+        - $ref: '#/components/schemas/Customer'
+      properties:
+        id:
+          readOnly: true
+          
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        customer_id:
+          type: integer
+          description: ID do cliente que fez o pedido (FK).
+        order_date:
+          type: string
+          format: date-time
+        total_price:
+          type: number
+          format: float
+        status:
+          type: string
+          default: Pendente
+        delivery_date:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - customer_id
+        - total_price
+
+    OrderInput:
+      type: object
+      description: Dados para criar um novo pedido.
+      allOf:
+        - $ref: '#/components/schemas/Order'
+      properties:
+        id:
+          readOnly: true
+          order_date:
+            readOnly: true
+            
+    OrderItem:
+      type: object
+      properties:
+        order_item_id:
+          type: integer
+        order_id:
+          type: integer
+          description: ID do pedido (FK).
+        cake_id:
+          type: integer
+          description: ID do bolo (FK).
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+          format: float
+          description: Preço do bolo no momento da compra.
+      required:
+        - order_id
+        - cake_id
+        - quantity
+        - unit_price
+
+    OrderItemInput:
+      type: object
+      description: Dados para adicionar um item a um pedido.
+      properties:
+        order_id:
+          type: integer
+          description: ID do pedido ao qual o item será adicionado.
+        cake_id:
+          type: integer
+          description: ID do bolo que está sendo pedido.
+        quantity:
+          type: integer
