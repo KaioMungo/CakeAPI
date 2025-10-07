@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  # Nome do seu serviço (o container da sua API)
+  cake_api:
+    # Usa o Dockerfile no diretório atual para construir a imagem
+    build: .
+    # Mapeia a porta do host (5000) para a porta do container (5000)
+    ports:
+      - "5000:5000"
+    # Monta o diretório local do projeto dentro do container
+    # Isso permite que você edite o código localmente e veja as mudanças (hot-reloading)
+    volumes:
+      - .:/usr/src/app
+    # Define as variáveis de ambiente, se necessário
+    environment:
+      - FLASK_ENV=development
+      # O caminho para o banco de dados (se for SQLite)
+      - DATABASE_URL=sqlite:////usr/src/app/app.db
+    # Garante que o container se reinicie se falhar (útil em produção)
+    restart: always
